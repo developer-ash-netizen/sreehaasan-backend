@@ -1,10 +1,10 @@
 import express from "express";
-import { getProjects, addProject } from "../controllers/projectsController.js";
-
+import Project from "../models/Project.js";
 const router = express.Router();
 
-// Routes
-router.get("/", getProjects);
-router.post("/", addProject);
+router.get("/", async (req, res) => {
+  const projects = await Project.find();
+  res.json(projects);
+});
 
 export default router;

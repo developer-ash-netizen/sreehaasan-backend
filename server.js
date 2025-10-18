@@ -1,25 +1,31 @@
+// server.js or app.js
 import express from "express";
-import mongoose from "mongoose";
 import cors from "cors";
+import mongoose from "mongoose";
 import dotenv from "dotenv";
+import projectRoutes from "./routes/projectRoutes.js";
 
 dotenv.config();
 const app = express();
 
-app.use(cors());
+// ✅ Enable CORS securely
+app.use(cors({
+  origin: ["https://sreehaasan.netlify.app", "http://localhost:5173"], // frontend URLs
+  methods: ["GET", "POST", "PUT", "DELETE"], // allowed methods
+  credentials: true, // if you ever use cookies or auth
+}));
+
+// ✅ Middleware to parse JSON
 app.use(express.json());
 
-// Connect MongoDB
-mongoose
-  .connect(process.env.MONGO_URI)
+// ✅ MongoDB Connection
+mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB Connected"))
-  .catch((err) => console.error("❌ MongoDB Connection Error:", err));
+  .catch(err => console.error("❌ MongoDB connection error:", err));
 
-// Routes
-app.get("/", (req, res) => res.send("Backend API working!"));
+// ✅ API Routes
+app.use("/api/projects", projectRoutes);
 
-import projectsRoutes from "./routes/projects.js";
-app.use("/api/projects", projectsRoutes);
-
+// ✅ Start Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
