@@ -1,31 +1,33 @@
-// server.js or app.js
+// server.js
 import express from "express";
-import cors from "cors";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import path from "path";
 import projectRoutes from "./routes/projectRoutes.js";
 
 dotenv.config();
 const app = express();
+const PORT = process.env.PORT || 5000;
 
-// ✅ Enable CORS securely
-app.use(cors({
-  origin: ["https://sreehaasan.netlify.app", "http://localhost:5173"], // frontend URLs
-  methods: ["GET", "POST", "PUT", "DELETE"], // allowed methods
-  credentials: true, // if you ever use cookies or auth
-}));
-
-// ✅ Middleware to parse JSON
+// JSON parsing for non-file routes
 app.use(express.json());
 
-// ✅ MongoDB Connection
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ MongoDB Connected"))
-  .catch(err => console.error("❌ MongoDB connection error:", err));
+// Serve uploaded files statically at /uploads/*
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
-// ✅ API Routes
+// Mount routes
 app.use("/api/projects", projectRoutes);
 
-// ✅ Start Server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.use("/api/projects", projectRoutes);
+app.use("/uploads", express.static("uploads"));
+
+// Connect to MongoDB and start
+mongoose
+  .connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => {
+    console.log("MongoDB connected");
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  })
+  .catch((err) => {
+    console.error("MongoDB connection error:", err);
+  });
